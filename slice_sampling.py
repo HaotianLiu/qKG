@@ -35,8 +35,8 @@ def _find_slice_interval(f, x,i,u, D, r, w=2):
     return a, b, r, a_out, b_out
     
     
-   # Multivariate_slice_sample
-   def multivariate_slice_sample(logpdf_targets,hyps,D,num_samples=1,burn=30,lag=2):
+# Multivariate_slice_sample
+def multivariate_slice_sample(logpdf_targets,hyps,D,num_samples=1,burn=30,lag=2):
     #hyps: list of hyperparameters, must be initiated 
     n=0
     samples =[]
@@ -47,7 +47,7 @@ def _find_slice_interval(f, x,i,u, D, r, w=2):
             samples.append(hyps[:])
     return samples
     
-    #Vanilla Slice_sampling
+#Vanilla Slice_sampling, adjusted for the multivariate sampling
 def slice_sample(x_start, logpdf_target,i,D,num_samples=1,burn=1, lag=1,w=1.0,rng=None,):
     """Slice samples from the univariate disitrbution logpdf_target.
     Parameters
@@ -67,8 +67,6 @@ def slice_sample(x_start, logpdf_target,i,D,num_samples=1,burn=1, lag=1,w=1.0,rn
     -------
     samples : list
         `num_samples` length list.
-    metadata : dict
-        Dictionary of intermediate slice sampling state, used for plotting.
     """
     if rng is None:
         rng = np.random.RandomState(0)
@@ -102,7 +100,6 @@ def slice_sample(x_start, logpdf_target,i,D,num_samples=1,burn=1, lag=1,w=1.0,rn
                     
                     b = x_prime
                 else:
-                   
                     a = x_prime
 
         if burn <= num_iters and num_iters%lag == 0:
