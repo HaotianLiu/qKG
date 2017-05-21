@@ -1,6 +1,22 @@
 #Find the approximate interval of slice sampling
-def _find_slice_interval(f, x,i,u, D, r, w=2):
-    """Return approximated interval under f at height u."""
+def _find_slice_interval(f, x,i,u, D, r, w=1):
+    """Return approximated interval under f at height u.
+    
+    Parameters
+    =========================================
+    
+    f: log_pdf of density to be sampled from
+    x: a list of hyperparameters
+    i: index of the hyperparameter to sample from
+    u: uniform(0,1)*initial functional evaluation
+    D: support of the distribution
+    r,w: weights to narrow down the bracket at the beginning
+    
+    Returns
+    =====================================================
+    a,b: approximate interval of the bracket
+    a_out,b_out: boundary of the bracket(two endpoints)
+    """
     ups=np.zeros(len(x))
     ups[i]=(1-r)*w
     downs=np.zeros(len(x))
@@ -37,11 +53,27 @@ def _find_slice_interval(f, x,i,u, D, r, w=2):
     
 # Multivariate_slice_sample
 def multivariate_slice_sample(logpdf_targets,hyps,D,num_samples=1,burn=30,lag=2):
+    '''Perform multivariate slice sampling using a univariate slice sampling method
+       iteratively updating each parameter in a manner like Gibbs sampling
+       
+       Parameters
+       --------------------
+       logpdf_targets: function      Target distribution
+       hyps: list/array_like         a list of initial hyperparameters 
+       D: list/array_like            A list of support for different hyperparameters
+       num_samples: int              Number of samples
+       burn : int, optional          Number of samples to discard before any are collected, default 1.
+       lag : int, optional           Number of moves between successive samples, default 1.
+
+       Returns
+       -----------------
+       A list of samples for all parameters
+    '''
     #hyps: list of hyperparameters, must be initiated 
     n=0
     samples =[]
     while len(samples)<num_samples:
-        hyps[n%len(hyps)]=slice_sample(hyps,logpdf_targets,n%len(hyps),D[n%len(hyps)])
+        hyps[n%len(hyps)]=slice_sample(hyps,logpdf_targets,n%len(hyps),D[n%len(hyps)])[0][n%len(hyps)]
         n+=1
         if n%len(hyps)==0 and burn <= (n-n%len(hyps))/len(hyps) and n%lag == 0:
             samples.append(hyps[:])
@@ -110,4 +142,4 @@ def slice_sample(x_start, logpdf_target,i,D,num_samples=1,burn=1, lag=1,w=1.0,rn
             M['x_proposal'].append(x_proposal)
             M['samples'].append(x)
 
-    return M['samples'][0][i]
+    return M['samples']
